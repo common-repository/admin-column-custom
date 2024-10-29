@@ -1,0 +1,15 @@
+#list-custom-columns {
+    counter-reset: tr_counter;
+}
+#list-custom-columns .check-column::after{
+    counter-increment: tr_counter;
+    content: counter(tr_counter);
+    display: block;
+    padding-left: 10px;
+}
+#list-custom-columns tr.hentry-drag{
+    cursor: move;
+}
+#list-custom-columns tr.hentry-default{
+    pointer-events: none;
+}
