@@ -13,33 +13,45 @@ defined('ABSPATH') or die();
  * 
  * Display column value;
  */
-function ad_column_custom_post_column($column = '', $post_id = null) 
+function ad_column_custom_post_column($column = '', $post_id = null)
 {
 	$post = get_post($post_id);
 
-	if (is_object($post) && isset($post->ID))
-	{
+	if (is_object($post) && isset($post->ID)) {
 		$data = ad_column_custom_get_column($post->post_type, $column);
 
 		$name = isset($data['name']) ? $data['name'] : '';
 		$type = isset($data['type']) ? $data['type'] : '';
 
 		if ($name == '') return;
-		
+
 		$value = '';
 
-		if ($type == 'post_field')
-		{
+		if ($type == 'get_field') {
+			if (function_exists('get_field')) {
+				$value = get_field($name, $post_id);
+
+				if (is_array($value)) {
+					$value = implode(', ', $value);
+				}
+			} else {
+				$type = 'post_meta';
+			}
+		}
+
+		if ($type == 'post_field') {
 			if ($name == 'path') {
 				$value = ad_column_get_page_path($post_id);
 			} else {
+				if (substr($name, 0, 4) != 'post') {
+					$name = 'post_' . $name;
+				}
+
 				$value = get_post_field($name, $post);
 			}
 
 			$value = esc_attr($value);
-		}
-		else if ($type == 'post_meta')
-		{
+		} else if ($type == 'post_meta') {
 			$value = get_post_meta($post_id, $column, true);
 
 			if (is_array($value)) {
@@ -47,17 +59,15 @@ function ad_column_custom_post_column($column = '', $post_id = null)
 			}
 
 			$value = esc_attr($value);
-		}
-		else if ($type == 'media')
-		{
+		} else if ($type == 'media') {
 			$size = 'thumbnail';
-			
+
 			$media_id = (int) get_post_meta($post_id, $column, true);
-			
+
 			if ($column == $size) {
-				$value = get_the_post_thumbnail($post, $size, ['class'=>'ad-column-img']);
-			} else if ($media_id>0){				
-				$value = wp_get_attachment_link($media_id, $size, false, true, false, ['class'=>'ad-column-img']);
+				$value = get_the_post_thumbnail($post, $size, ['class' => 'ad-column-img']);
+			} else if ($media_id > 0) {
+				$value = wp_get_attachment_link($media_id, $size, false, true, false, ['class' => 'ad-column-img']);
 			}
 		}
 
@@ -83,7 +93,7 @@ function ad_column_custom_add_post_column($columns = array(), $type = 'page')
 
 	$list = array();
 
-	foreach($data as $i => $item) {
+	foreach ($data as $i => $item) {
 		if ($item['after'] == 'first') {
 			$list[$item['name']] = esc_attr(__($item['title']));
 			unset($data[$i]);
@@ -92,15 +102,15 @@ function ad_column_custom_add_post_column($columns = array(), $type = 'page')
 
 	foreach ($columns as $key => $value) {
 		$list[$key] = $value;
-	
-		foreach($data as $i => $item) {
+
+		foreach ($data as $i => $item) {
 			if ($item['after'] == $key) {
 				$list[$item['name']] = esc_attr(__($item['title']));
 				unset($data[$i]);
 			}
 		}
 	}
-	
+
 	return $list;
 }
 
@@ -112,16 +122,16 @@ function ad_column_custom_add_post_column($columns = array(), $type = 'page')
 function ad_column_custom_list_page()
 {
 	/* posts */
-	foreach(ad_column_custom_get_post_types('key') as $post_type) {
-		add_filter('manage_'. $post_type .'s_columns', 'ad_column_custom_add_post_column', 10, 2);
-		add_action('manage_'. $post_type .'s_custom_column', 'ad_column_custom_post_column', 10, 2);
+	foreach (ad_column_custom_get_post_types('key') as $post_type) {
+		add_filter('manage_' . $post_type . 's_columns', 'ad_column_custom_add_post_column', 10, 2);
+		add_action('manage_' . $post_type . 's_custom_column', 'ad_column_custom_post_column', 10, 2);
 	}
 
 	/* user */
 	add_filter('manage_users_columns', 'ad_column_custom_add_user_column');
 	add_filter('manage_users_custom_column', 'ad_column_custom_user_column', 10, 3);
 }
-add_action('admin_init' , 'ad_column_custom_list_page');
+add_action('admin_init', 'ad_column_custom_list_page');
 
 /* Users */
 
@@ -132,7 +142,7 @@ add_action('admin_init' , 'ad_column_custom_list_page');
  * 
  * @return array;
  */
-function ad_column_custom_add_user_column($columns) 
+function ad_column_custom_add_user_column($columns)
 {
 	return ad_column_custom_add_post_column($columns, 'user');
 }
@@ -146,9 +156,9 @@ function ad_column_custom_add_user_column($columns)
  * 
  * @return string;
  */
-function ad_column_custom_user_column($value = '', $column = '', $user_id = 0) 
+function ad_column_custom_user_column($value = '', $column = '', $user_id = 0)
 {
-	if ($user_id>0) {
+	if ($user_id > 0) {
 		$data = ad_column_custom_get_column('user', $column);
 		if (isset($data['name'])) {
 			$value = get_user_meta($user_id, $column, true);
@@ -160,7 +170,7 @@ function ad_column_custom_user_column($value = '', $column = '', $user_id = 0)
 			$value = esc_attr($value);
 		}
 	}
-	
+
 	return $value;
 }
 
@@ -210,9 +220,9 @@ function ad_column_custom_get_default_columns($type = '')
 
 	if ($type == 'user') {
 		$names = array('username', 'name', 'email', 'role', 'posts');
-	} else if (in_array($type,['post','page'])) {
-		/* posts */ 
-		
+	} else if (in_array($type, ['post', 'page'])) {
+		/* posts */
+
 		$names = array('title', 'author');
 
 		if ($type == 'post') {
@@ -223,7 +233,7 @@ function ad_column_custom_get_default_columns($type = '')
 	} else {
 		$names = array('title');
 	}
-	
+
 	foreach ($names as $name) {
 		$columns[] = array(
 			'title' => __(ucwords($name), 'admin-column-custom'),
@@ -254,7 +264,7 @@ function ad_column_custom_get_columns($type = '', $columns = array())
 	if (is_array($data) && count($data)) {
 		$list = array();
 
-		foreach($data as $i => $item) {
+		foreach ($data as $i => $item) {
 			if ($item['after'] == 'first') {
 				$item['default'] = 0;
 				$list[] = $item;
@@ -262,10 +272,10 @@ function ad_column_custom_get_columns($type = '', $columns = array())
 			}
 		}
 
-		foreach($columns as $column) {
+		foreach ($columns as $column) {
 			$list[] = $column;
 
-			foreach($data as $i => $item) {
+			foreach ($data as $i => $item) {
 				if ($item['after'] == $column['name']) {
 					$item['default'] = 0;
 					$list[] = $item;
@@ -293,17 +303,17 @@ function ad_column_custom_get_column($type = '', $name = '', $key = '')
 {
 	global $ad_column_data;
 
-	if (empty($ad_column_data[ $type ])) {
-		$ad_column_data[ $type ] = ad_column_get_option($type);
+	if (empty($ad_column_data[$type])) {
+		$ad_column_data[$type] = ad_column_get_option($type);
 	}
 
-	$data = $ad_column_data[ $type ];
+	$data = $ad_column_data[$type];
 
-	if (is_array($data) && count($data)>0) {
-		foreach($data as $item) {
+	if (is_array($data) && count($data) > 0) {
+		foreach ($data as $item) {
 			if ($item['name'] == $name) {
 
-				if ($key!='' && isset($item[$key])) {
+				if ($key != '' && isset($item[$key])) {
 					return $item[$key];
 				}
 
@@ -314,7 +324,7 @@ function ad_column_custom_get_column($type = '', $name = '', $key = '')
 		return $data;
 	}
 
-	if ($key!='') {
+	if ($key != '') {
 		return '';
 	}
 
@@ -342,6 +352,10 @@ function ad_column_custom_get_column_types($type = '')
 			'post_meta' 	=> __('Post Meta', 'admin-column-custom'),
 			'media' 		=> __('Media', 'admin-column-custom'),
 		);
+	}
+
+	if (function_exists('get_field')) {
+		$column_types['get_field'] = __('Get Field (ACF)', 'admin-column-custom');
 	}
 
 	return $column_types;

@@ -2,10 +2,10 @@
 /*
 Plugin Name: Admin Column
 Plugin URI: http://photoboxone.com/donate/?for=admin-column
-Description: Customise columns on the administration screens for posts, pages and users.
+Description: Customise columns on the administration screens for posts, pages and users. Support the Advanced Custom Fields plugin.
 Author: DevUI
 Author URI: http://photoboxone.com/donate/?developer=devui
-Version: 1.0.18
+Version: 1.0.19
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: admin-column-custom
@@ -19,7 +19,7 @@ function ad_column_custom_index()
 }
 
 if (is_admin()) {
-    require( __DIR__ . '/includes/functions.php');
-    require( __DIR__ . '/includes/columns.php');
-    require( __DIR__ . '/includes/setting.php');
+    require_once __DIR__ . '/includes/functions.php';
+    require_once __DIR__ . '/includes/columns.php';
+    require_once __DIR__ . '/includes/setting.php';
 }

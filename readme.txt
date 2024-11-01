@@ -6,13 +6,13 @@ Donate link: http://photoboxone.com/donate/?for=admin-column
 Tags: admin column, posts columns, pages columns, users columns, devui
 Requires at least: 3.5
 Tested up to: 6.6.2
-Stable tag: 1.0.18
+Stable tag: 1.0.19
 
-Customise columns on the administration screens for posts, pages and users.
+Customise columns on the administration screens for posts, pages and users. Support the Advanced Custom Fields plugin.
 
 == Description ==
 
-Customise columns on the administration screens for posts, pages and users.
+Customise columns on the administration screens for posts, pages and users. Support the Advanced Custom Fields plugin.
 
 = The plugin allows using =
 

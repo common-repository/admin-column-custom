@@ -6,14 +6,15 @@ defined('ABSPATH') or die();
 
 function ad_column_custom_plugin_actions($actions = array())
 {
-	$pagenow = sanitize_text_field(isset($GLOBALS['pagenow']) ? $GLOBALS['pagenow'] : '');
-	if ($pagenow != 'plugins.php') {
+	global $pagenow;
+
+	if (empty($pagenow) || $pagenow != 'plugins.php') {
 		return $actions;
 	}
 
-	$url_setting = esc_url(admin_url('options-general.php?page=admin-column-custom'));
+	$url_setting = add_query_arg(['page' => 'admin-column-custom'], admin_url('options-general.php'));
 
-	array_unshift($actions, "<a href=\"$url_setting\">" . __("Settings") . "</a>");
+	array_unshift($actions, sprintf('<a href="%s">%s</a>', $url_setting, __("Settings")));
 
 	return $actions;
 }
@@ -56,9 +57,11 @@ function ad_column_custom_init_theme_option()
 		register_setting('ad_column_' . $post_type, 'ad_column_' . $post_type);
 	}
 
+	global $pagenow, $plugin_page;
+
 	$url = ad_column_custom_assets_url();
 
-	$page = isset($_REQUEST['page']) ? sanitize_text_field($_REQUEST['page']) : '';
+	$page = isset($plugin_page) ? sanitize_text_field($plugin_page) : '';
 	if ($page == 'admin-column-custom') {
 		// Styles - Scripts
 		wp_enqueue_style('admin-column', $url . 'admin.css');
@@ -67,7 +70,7 @@ function ad_column_custom_init_theme_option()
 		// wp_enqueue_script('admin-column', $url . 'admin.js', array('jquery', 'jquery-ui-sortable'), time(), true); // dev
 	}
 
-	$pagenow = isset($GLOBALS['pagenow']) ? sanitize_text_field($GLOBALS['pagenow']) : '';
+	$pagenow = isset($pagenow) ? sanitize_text_field($pagenow) : '';
 	if ($pagenow == 'edit.php') {
 		// Styles - Scripts
 		wp_enqueue_style('admin-column-edit', $url . 'edit.css');
